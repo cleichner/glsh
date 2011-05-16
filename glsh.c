@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include "tokenize.h"
 
 #define MAXLINE 4096
 
@@ -15,14 +16,23 @@ int main(void){
     while( fgets(buffer, MAXLINE, stdin) != NULL ){
         if( buffer[strlen(buffer) - 1] == '\n' )
             buffer[strlen(buffer) - 1] = '\0';
-        
+
+        struct tokenized_tree_node* tree = tokenize(buffer);
+
+        if (tree == NULL)
+            printf("INVALID\n");
+        else
+            print_tree(tree, 0);
+
+        char* command = tree->contents;
+
         if( (pid = fork()) < 0 ){
             fprintf(stderr, "fork error\n");
         }
 
         else if( pid == 0 ) {
-            execlp( buffer, buffer, '\0' );
-            fprintf(stderr, "couldn't execute: %s\n", buffer);
+            execlp( command, command, NULL);
+            fprintf(stderr, "couldn't execute: %s\n", command);
             exit(127);
         }
 
