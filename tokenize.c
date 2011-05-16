@@ -21,6 +21,12 @@ char* find_first_delimeter(char* string)
 
     while (!is_delimeter(*string_iterator))
     {
+        if (*string_iterator == '\\' &&
+            (*(string_iterator+1) != '\0'))
+        {
+            string_iterator++;
+        }
+
         string_iterator++;
     }
 
