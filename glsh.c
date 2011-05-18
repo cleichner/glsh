@@ -21,24 +21,26 @@ int main(void){
         command* parsed_command =
             create_parse_tree(tokenized_command);
 
-        command* command_iterator;
-        for (iterator(command_iterator, parsed_command))
-        {
-            printf("New command:\n");
-            commanditem* command_contents = command_iterator->contents;
-            for (iter(command_contents))
+        #ifdef DEBUG
+            command* command_iterator;
+            for (iterator(command_iterator, parsed_command))
             {
-                printf("%s\n", (char*)(command_contents->contents));
+                printf("New command:\n");
+                commanditem* command_contents = command_iterator->contents;
+                for (iter(command_contents))
+                {
+                    printf("%s\n", (char*)(command_contents->contents));
+                }
+                if (command_iterator->input != NULL)
+                    printf("\tInput: %s\n", command_iterator->input);
+                if (command_iterator->output != NULL)
+                    printf("\tOutput: %s\n", command_iterator->output);
+                if (command_iterator->output_append)
+                    printf("\tAppend\n");
+                if (command_iterator->background)
+                    printf("\tBackground this\n");
             }
-            if (command_iterator->input != NULL)
-                printf("\tInput: %s\n", command_iterator->input);
-            if (command_iterator->output != NULL)
-                printf("\tOutput: %s\n", command_iterator->output);
-            if (command_iterator->output_append)
-                printf("\tAppend\n");
-            if (command_iterator->background)
-                printf("\tBackground this\n");
-        }
+        #endif
 
         execute(parsed_command);
 
