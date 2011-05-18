@@ -3,22 +3,38 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "common.h"
 #include "tokenize.h"
 
-char delimeters[] = { ' ', '`', '"', '\0' };
+char delimeters[] = { ' ', '`', '"', '(', ')', '{', '}', '|', '&', '\0' };
 
 static bool is_delimeter(char to_test);
-static char* find_first_delimeter(char* string);
+static char* find_next_delimeter(char* string);
+struct tokenized_node* create_tokenized_node(char* token_string, int token_length);
 
 /**
- * char* find_first_delimeter(char*)
+ * char* find_next_delimeter(char*)
  *
  * Finds and returns the address of the first character after string
- * that is a delimeter. This method assumes that there will eventually
- * be a delimeter, even if it is only the null character.
+ * that should be delimeted at.
+ *
+ * This is a little hackish, since we're doing this without properly
+ * implementing/using regular expressions and simply assuming that
+ * whitespace is whitespace and non-delimeters can be clumped together,
+ * etc.
+ *
+ * Ignores characters after a backslash.
  */
-static char* find_first_delimeter(char* string)
+static char* find_next_delimeter(char* string)
 {
+    /**
+     * Special case as a result of not using regular expressions:
+     * If first character is a delimeter, we just return the next
+     * character rather than looking for a future delimeter.
+     */
+    if (is_delimeter(*string))
+        return string + 1;
+
     char* string_iterator = string;
 
     while (!is_delimeter(*string_iterator))
@@ -60,139 +76,86 @@ static bool is_delimeter(char to_test)
 }
 
 /**
- *
- * end_character is assumed to be a valid delimeter.
- * token_ended_at is an output.
+ * Tokenize a string given the defined set of tokens in this file.
+ * Returns a pointer to the head node of a list of tokens.
  */
-struct tokenized_tree_node* tokenize_recursive(
-    char* string,
-    char end_character,
-    char** token_ended_at)
+struct tokenized_node* tokenize(char* string)
 {
 
     char* token_start = string;
     char* token_end;
 
     // Fake first node to avoid special casing later
-    struct tokenized_tree_node fake_node;
-    struct tokenized_tree_node* current_node = &fake_node;
+    struct tokenized_node fake_node;
+    struct tokenized_node* current_node = &fake_node;
 
     while (1)
     {
 
-        token_end = find_first_delimeter(token_start);
+        token_end = find_next_delimeter(token_start);
 
         int token_size = (token_end - token_start) / sizeof(char);
 
-        // Create new node
-        struct tokenized_tree_node* new_node
-            = malloc(sizeof(struct tokenized_tree_node));
-
-        if (token_size == 0)
+        // Skip spaces
+        if (token_size == 1 && *token_start == ' ')
         {
-
-            if (*token_start == ' ')
-            {
-                token_start++;
-                continue;
-            }
-
-            else if (*token_start == end_character)
-            {
-                new_node->next = NULL;
-                break;
-            }
-
-            // Ending our command prematurely is bad.
-            else if (*token_start == '\0')
-            {
-                // TODO free allocated memory.
-                return NULL;
-            }
-
-            // Recurse!
-            else
-            {
-
-                new_node->is_container = true;
-                new_node->delimeter = *token_start;
-
-                struct tokenized_tree_node* child_node = tokenize_recursive(
-                    (++token_start),
-                    new_node->delimeter,
-                    &token_end);
-
-                if (child_node == NULL)
-                    return NULL;
-
-                new_node->contents = child_node;
-            }
+            token_start++;
+            continue;
         }
 
-        else
-        {
-
-            new_node->is_container = false;
-
-            new_node->contents = malloc((token_size + 1) * sizeof(char));
-            strncpy(new_node->contents, token_start, token_size);
-            ((char*)(new_node->contents))[token_size] = '\0';
-            
-        }
-
-        current_node->next = new_node;
-        current_node = new_node;
-        token_start = token_end + 1;
-
-        if (*token_end == end_character)
+        // Avoid an unnecessary "word"
+        if (token_size == 1 && *token_start == '\0')
         {
             break;
         }
 
+        else
+        {
+
+            struct tokenized_node* new_node
+                = create_tokenized_node(token_start, token_size);
+            
+            current_node->next = new_node;
+            current_node = new_node;
+        }
+
+        if (*token_end == '\0') break;
+
+        token_start = token_end;
+
     }
 
-    *token_ended_at = token_end;
     return fake_node.next;
 
 }
 
-struct tokenized_tree_node* tokenize(char* string)
+struct tokenized_node* create_tokenized_node(char* token_string, int token_length)
 {
-    char* junk;
-    return tokenize_recursive(string, '\0', &junk);
+    struct tokenized_node* new_node
+        = malloc(sizeof(struct tokenized_node));
+
+    printf("DEBUG: making a node of size %d\n", token_length);
+    printf("Debug: String: %s\n", token_string);
+
+    new_node->contents = malloc((token_length + 1) * sizeof(char));
+    strncpy(new_node->contents, token_string, token_length);
+    new_node->contents[token_length] = '\0';
+
+    return new_node;
 }
 
-void print_tree(struct tokenized_tree_node* node_to_print, int depth)
+void print_list(struct tokenized_node* node_to_print)
 {
-    struct tokenized_tree_node* node_iterator = node_to_print;
+    struct tokenized_node* node_iterator;
 
-    while (node_iterator)
+    for (iterator(node_iterator, node_to_print))
     {
-
-        if (node_iterator->is_container)
-        {
-            print_tree((struct tokenized_tree_node*)(node_iterator->contents),
-                depth + 1);
-        }
-
-        else
-        {
-
-            int i;
-            for (i = 0; i < depth; i++)
-            {
-                printf("\t");
-            }
-
-            printf("%s\n", (char*)(node_iterator->contents));
-
-        }
-
-        node_iterator = node_iterator->next;
+        printf("%s\n", (char*)(node_iterator->contents));
     }
+
 }
 
-void free_tree(struct tokenized_tree_node* node_to_free)
+void free_tree(struct tokenized_node* node_to_free)
 {
     // TODO
     // OM NOM NOM

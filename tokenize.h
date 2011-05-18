@@ -3,17 +3,15 @@
 #ifndef __TOKENIZE_H_GUARD__
 #define __TOKENIZE_H_GUARD__
 
-struct tokenized_tree_node {
-    char is_container;
-    char delimeter;
-    void* contents;
-    struct tokenized_tree_node* next;
+struct tokenized_node {
+    char* contents;
+    struct tokenized_node* next;
 };
 
-struct tokenized_tree_node* tokenize(char* string);
+struct tokenized_node* tokenize(char* string);
 
-void print_tree(struct tokenized_tree_node* node_to_print, int depth);
+void print_list(struct tokenized_node* node_to_print);
 
-void free_tree(struct tokenized_tree_node* node_to_free);
+void free_list(struct tokenized_node* node_to_free);
 
 #endif

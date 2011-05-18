@@ -19,14 +19,10 @@ int main(void){
         if( buffer[strlen(buffer) - 1] == '\n' )
             buffer[strlen(buffer) - 1] = '\0';
 
-        struct tokenized_tree_node* tree = tokenize(buffer);
+        struct tokenized_node* tokenized_command = tokenize(buffer);
 
-        if (tree == NULL)
-            printf("INVALID\n");
-        else
-            print_tree(tree, 0);
-
-        char* command = tree->contents;
+        char* command = tokenized_command->contents;
+        print_list(tokenized_command);
 
         if( (pid = fork()) < 0 ){
             fprintf(stderr, "fork error\n");
