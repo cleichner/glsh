@@ -144,19 +144,21 @@ struct tokenized_node* create_tokenized_node(char* token_string, int token_lengt
     return new_node;
 }
 
-void print_list(struct tokenized_node* node_to_print)
+void print_list(struct tokenized_node* list_to_print)
 {
     struct tokenized_node* node_iterator;
 
-    for (iterator(node_iterator, node_to_print))
+    for (iterator(node_iterator, list_to_print))
     {
         printf("%s\n", (char*)(node_iterator->contents));
     }
 
 }
 
-void free_tree(struct tokenized_node* node_to_free)
+void free_list(struct tokenized_node* list_to_free)
 {
     // TODO
     // OM NOM NOM
+
+
 }
