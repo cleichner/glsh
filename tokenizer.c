@@ -4,9 +4,9 @@
 #include <stdbool.h>
 
 #include "common.h"
-#include "tokenize.h"
+#include "tokenizer.h"
 
-char delimeters[] = { ' ', '`', '"', '(', ')', '{', '}', '|', '&', '\0' };
+char delimeters[] = { ' ', '`', '"', '(', ')', '{', '}', '|', '&', '>', '<', '\0' };
 
 static bool is_delimeter(char to_test);
 static char* find_next_delimeter(char* string);

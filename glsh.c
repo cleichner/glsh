@@ -5,7 +5,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
-#include "tokenize.h"
+#include "tokenizer.h"
 
 #define MAXLINE 4096
 

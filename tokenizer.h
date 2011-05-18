@@ -1,7 +1,7 @@
 
 
-#ifndef __TOKENIZE_H_GUARD__
-#define __TOKENIZE_H_GUARD__
+#ifndef __TOKENIZER_H_GUARD__
+#define __TOKENIZER_H_GUARD__
 
 struct tokenized_node {
     char* contents;
