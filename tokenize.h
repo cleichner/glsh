@@ -12,6 +12,8 @@ struct tokenized_tree_node {
 
 struct tokenized_tree_node* tokenize(char* string);
 
+void print_tree(struct tokenized_tree_node* node_to_print, int depth);
+
 void free_tree(struct tokenized_tree_node* node_to_free);
 
 #endif

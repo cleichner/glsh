@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+
 #include "tokenize.h"
 
 #define MAXLINE 4096

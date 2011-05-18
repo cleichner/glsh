@@ -1,12 +1,14 @@
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
 #include "tokenize.h"
 
 char delimeters[] = { ' ', '`', '"', '\0' };
 
-int is_delimeter(char to_test);
-char* find_first_delimeter(char* string);
+static bool is_delimeter(char to_test);
+static char* find_first_delimeter(char* string);
 
 /**
  * char* find_first_delimeter(char*)
@@ -15,7 +17,7 @@ char* find_first_delimeter(char* string);
  * that is a delimeter. This method assumes that there will eventually
  * be a delimeter, even if it is only the null character.
  */
-char* find_first_delimeter(char* string)
+static char* find_first_delimeter(char* string)
 {
     char* string_iterator = string;
 
@@ -34,27 +36,27 @@ char* find_first_delimeter(char* string)
 }
 
 /**
- * int is_delimeter(char)
+ * bool is_delimeter(char)
  *
  * Returns whether or not the given char is one of the delimeters
  * as specified in the delimeters array.
  */
-int is_delimeter(char to_test)
+static bool is_delimeter(char to_test)
 {
     char* delimeter_iterator = delimeters;
 
     while (*delimeter_iterator)
     {
         if (to_test == *delimeter_iterator)
-            return 1;
+            return true;
 
         delimeter_iterator++;
     }
 
     if (to_test == '\0')
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
 
 /**
@@ -112,7 +114,7 @@ struct tokenized_tree_node* tokenize_recursive(
             else
             {
 
-                new_node->is_container = 1;
+                new_node->is_container = true;
                 new_node->delimeter = *token_start;
 
                 struct tokenized_tree_node* child_node = tokenize_recursive(
@@ -130,7 +132,7 @@ struct tokenized_tree_node* tokenize_recursive(
         else
         {
 
-            new_node->is_container = 0;
+            new_node->is_container = false;
 
             new_node->contents = malloc((token_size + 1) * sizeof(char));
             strncpy(new_node->contents, token_start, token_size);
