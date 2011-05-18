@@ -62,10 +62,12 @@ command* create_parse_tree_recursive(
 
     // Used so we don't have to special-case first node in the tree
     command fake_start_node;
+    fake_start_node.next = NULL;
     command* current_command = &fake_start_node;
     bool in_command = false;
 
     commanditem fake_start_item;
+    fake_start_item.next = NULL;
     commanditem* current_command_item = &fake_start_item;
 
     struct tokenized_node* token_iterator = tokenized_command;

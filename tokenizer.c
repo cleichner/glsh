@@ -87,6 +87,7 @@ struct tokenized_node* tokenize(char* string)
 
     // Fake first node to avoid special casing later
     struct tokenized_node fake_node;
+    fake_node.next = NULL; fake_node.contents = NULL;
     struct tokenized_node* current_node = &fake_node;
 
     while (1)
