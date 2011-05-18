@@ -137,6 +137,8 @@ struct tokenized_node* create_tokenized_node(char* token_string, int token_lengt
     printf("DEBUG: making a node of size %d\n", token_length);
     printf("Debug: String: %s\n", token_string);
 
+    new_node->next = NULL;
+
     new_node->contents = malloc((token_length + 1) * sizeof(char));
     strncpy(new_node->contents, token_string, token_length);
     new_node->contents[token_length] = '\0';

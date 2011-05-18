@@ -6,6 +6,8 @@
 #include <sys/types.h>
 
 #include "tokenizer.h"
+#include "parser.h"
+#include "common.h"
 
 #define MAXLINE 4096
 
@@ -20,9 +22,28 @@ int main(void){
             buffer[strlen(buffer) - 1] = '\0';
 
         struct tokenized_node* tokenized_command = tokenize(buffer);
+        command* parsed_command =
+        create_parse_tree(tokenized_command);
+
+        for (iter(parsed_command))
+        {
+            printf("New command:\n");
+            commanditem* command_contents = parsed_command->contents;
+            for (iter(command_contents))
+            {
+                printf("%s\n", (char*)(command_contents->contents));
+            }
+            if (parsed_command->input != NULL)
+                printf("\tInput: %s\n", parsed_command->input);
+            if (parsed_command->output != NULL)
+                printf("\tOutput: %s\n", parsed_command->output);
+            if (parsed_command->output_append)
+                printf("\tAppend\n");
+            if (parsed_command->background)
+                printf("\tBackground this\n");
+        }
 
         char* command = tokenized_command->contents;
-        print_list(tokenized_command);
 
         if( (pid = fork()) < 0 ){
             fprintf(stderr, "fork error\n");

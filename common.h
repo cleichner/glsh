@@ -3,5 +3,6 @@
 
 // for (iterator(iterator, first_node)) { ... }
 #define iterator(x, y) (x) = (y); (x); (x) = (x)->next
+#define iter(x) ; (x); (x) = (x)->next
 
 #endif
