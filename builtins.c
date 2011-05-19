@@ -4,12 +4,13 @@
  * Implementations of shell built-ins.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "builtins.h"
 
-int builtin_chdir(char* argv)
+int builtin_chdir(char** argv)
 {
 
     char* directory = argv[1];
@@ -30,9 +31,9 @@ int builtin_exit(char** argv)
     char* exit_code = argv[1];
 
     if (exit_code != NULL)
-        exit(atoi(exit_code));
+        _exit(atoi(exit_code));
     else
-        exit(0);
+        _exit(0);
     
     return 0;
 }

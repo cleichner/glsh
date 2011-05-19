@@ -144,21 +144,23 @@ struct tokenized_node* create_tokenized_node(char* token_string, int token_lengt
     return new_node;
 }
 
-void print_list(struct tokenized_node* list_to_print)
+/*************************
+ * Given a tokenized command, free it and all
+ * tokens following it in the list.
+ */
+void free_token_list(struct tokenized_node* list_to_free)
 {
-    struct tokenized_node* node_iterator;
 
-    for (iterator(node_iterator, list_to_print))
+    struct tokenized_node* token_iterator = list_to_free;
+    while (token_iterator)
     {
-        printf("%s\n", (char*)(node_iterator->contents));
+        struct tokenized_node* next_token = token_iterator->next;
+
+        if (token_iterator->contents != NULL)
+            free(token_iterator->contents);
+        free(token_iterator);
+
+        token_iterator = next_token;
     }
-
-}
-
-void free_list(struct tokenized_node* list_to_free)
-{
-    // TODO
-    // OM NOM NOM
-
 
 }

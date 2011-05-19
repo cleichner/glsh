@@ -31,6 +31,6 @@ typedef struct parsed_command_node {
 } command;
 
 command* create_parse_tree(struct tokenized_node* tokenized_command);
-
+void free_parse_tree(command* parse_tree);
 
 #endif

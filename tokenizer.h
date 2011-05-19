@@ -10,8 +10,6 @@ struct tokenized_node {
 
 struct tokenized_node* tokenize(char* string);
 
-void print_list(struct tokenized_node* node_to_print);
-
-void free_list(struct tokenized_node* node_to_free);
+void free_token_list(struct tokenized_node* node_to_free);
 
 #endif

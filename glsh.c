@@ -44,6 +44,9 @@ int main(void){
 
         execute(parsed_command);
 
+        free_parse_tree(parsed_command);
+        free_token_list(tokenized_command);
+
         printf("$ ");
     }
 

@@ -214,3 +214,38 @@ command* create_command()
     return new_node;
 
 }
+
+/*********************
+ * Given a constructed parse tree, free it and
+ * all of its child nodes.
+ */
+void free_parse_tree(command* parse_tree)
+{
+
+    command* command_iterator = parse_tree;
+    while (command_iterator)
+    {
+        command* next_command = command_iterator->next;
+
+        commanditem* commanditem_iterator = command_iterator->contents;
+
+        while (commanditem_iterator)
+        {
+            commanditem* next_commanditem = commanditem_iterator->next;
+
+            if (commanditem_iterator->contents != NULL)
+                free(commanditem_iterator->contents);
+            free(commanditem_iterator);
+
+            commanditem_iterator = next_commanditem;
+        }
+        if (command_iterator->input != NULL)
+            free(command_iterator->input);
+        if (command_iterator->output != NULL)
+            free(command_iterator->output);
+        free(command_iterator);
+
+        command_iterator = next_command;
+    }
+
+}
