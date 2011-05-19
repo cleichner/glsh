@@ -83,20 +83,14 @@ void redirect_stdout(char* output){
  */
 int execute(command* command_to_execute){
 
-//    int status;
+    int status;
     pid_t pid;
 
     if(!command_to_execute)
         return 0;
 
-    // Fork. Parent returns.
-    if( (pid = fork()) < 0 ){
-        fprintf(stderr, "fork error\n");
-    }
-    if (pid > 0) return 0;
-
-    int fd[2];
-    bool first = true;
+    int curr_fd[2] = {-1, -1};
+    int next_fd[2] = {-1, -1};
 
     while (command_to_execute)
     {
@@ -104,68 +98,56 @@ int execute(command* command_to_execute){
         // If has next, we need to set up pipes
         if (command_to_execute->piped_to)
         {
-            bool tmp_first = false;
-            if (first)
-            {
-                first = false; tmp_first = true;
-            }
-
-            if (pipe(fd) < 0)
-            {
+            if (pipe(next_fd) < 0)
                 fprintf(stderr, "pipe failed A\n");
-            }
-            if( (pid = fork()) < 0 ){
-                fprintf(stderr, "fork error\n");
-            }
-
-            if (pid == 0)
-            {
-                close(fd[1]);
-                if((dup2(fd[0], STDIN_FILENO) == -1) ){
-                    fprintf(stderr, "couldn't redirect stdin to pipe A\n");
-                }
-                command_to_execute = command_to_execute->piped_to;
-                continue;
-            }
-
-            if (pid > 0)
-            {
-                close(fd[0]);
-                if((dup2(fd[1], STDOUT_FILENO) == -1) ){
-                    fprintf(stderr, "couldn't redirect stdout to pipe A\n");
-                }
-            }
-
         }
 
+        if( (pid = fork()) < 0 ){
+            fprintf(stderr, "fork error\n");
+        }
 
-
-             //redirect_stdin( command_to_execute->input );
-            //redirect_stdout( command_to_execute->output );
-
-            char** argv = build_argv( command_to_execute->contents );
-        printf("My pid is %d and command to execute is %s\n", pid, argv[0]);
-
-        // Execute if: we are A parent process, or we are the last process.
-        if (pid > 0 || !(command_to_execute->piped_to))
+        // Parent process cycles back around
+        if (pid > 0)
         {
-
-            printf("I am PID %d and am executing\n", pid);
-
-            execvp(argv[0], argv);
-            run_builtin(argv[0], argv);
-            exit(0);
-
-            free(argv);
-            return 127;
-            
+            command_to_execute = command_to_execute->piped_to;
+            curr_fd[0] = next_fd[0];
+            curr_fd[1] = next_fd[1];
+            if( (pid = waitpid( pid, &status, 0)) < 0)
+                fprintf(stderr, "waitpid error\n");
+            close(next_fd[1]);
+            continue;
         }
-//        if( (pid = waitpid( pid, &status, 0)) < 0)
-//            fprintf(stderr, "waitpid error\n");
 
-        command_to_execute = command_to_execute->piped_to;
+        char** argv = build_argv( command_to_execute->contents );
 
+        // Set up FD's for pipes with prev/next processes
+        if (curr_fd[0] > 0 && curr_fd[1] > 0)
+        {
+            close(curr_fd[1]);
+            if (dup2(curr_fd[0], STDIN_FILENO) == -1)
+                fprintf(stderr, "pipe <- stdin failed\n");
+        }
+
+        if (command_to_execute->piped_to)
+        {
+            close(next_fd[0]);
+            if (dup2(next_fd[1], STDOUT_FILENO) == -1)
+                fprintf(stderr, "pipe -> stdout failed\n");
+        }
+
+        redirect_stdin( command_to_execute->input );
+        redirect_stdout( command_to_execute->output );
+
+        execvp(argv[0], argv);
+        run_builtin(argv[0], argv);
+        exit(0);
+
+        free(argv);
+        return 127;
+            
     }
+
+status = 1;
 
     return 0;
 
