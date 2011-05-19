@@ -83,31 +83,89 @@ void redirect_stdout(char* output){
  */
 int execute(command* command_to_execute){
 
-    int status;
+//    int status;
     pid_t pid;
 
     if(!command_to_execute)
         return 0;
 
+    // Fork. Parent returns.
     if( (pid = fork()) < 0 ){
         fprintf(stderr, "fork error\n");
     }
+    if (pid > 0) return 0;
 
-    else if( pid == 0 ) {
-        redirect_stdin( command_to_execute->input );
-        redirect_stdout( command_to_execute->output );
+    int fd[2];
+    bool first = true;
 
-        char** argv = build_argv( command_to_execute->contents );
-        execvp(argv[0], argv);
-        run_builtin(argv[0], argv);
-        exit(0);
+    while (command_to_execute)
+    {
 
-        free(argv);
-        return 127;
+        // If has next, we need to set up pipes
+        if (command_to_execute->piped_to)
+        {
+            bool tmp_first = false;
+            if (first)
+            {
+                first = false; tmp_first = true;
+            }
+
+            if (pipe(fd) < 0)
+            {
+                fprintf(stderr, "pipe failed A\n");
+            }
+            if( (pid = fork()) < 0 ){
+                fprintf(stderr, "fork error\n");
+            }
+
+            if (pid == 0)
+            {
+                close(fd[1]);
+                if((dup2(fd[0], STDIN_FILENO) == -1) ){
+                    fprintf(stderr, "couldn't redirect stdin to pipe A\n");
+                }
+                command_to_execute = command_to_execute->piped_to;
+                continue;
+            }
+
+            if (pid > 0)
+            {
+                close(fd[0]);
+                if((dup2(fd[1], STDOUT_FILENO) == -1) ){
+                    fprintf(stderr, "couldn't redirect stdout to pipe A\n");
+                }
+            }
+
+        }
+
+
+
+             //redirect_stdin( command_to_execute->input );
+            //redirect_stdout( command_to_execute->output );
+
+            char** argv = build_argv( command_to_execute->contents );
+        printf("My pid is %d and command to execute is %s\n", pid, argv[0]);
+
+        // Execute if: we are A parent process, or we are the last process.
+        if (pid > 0 || !(command_to_execute->piped_to))
+        {
+
+            printf("I am PID %d and am executing\n", pid);
+
+            execvp(argv[0], argv);
+            run_builtin(argv[0], argv);
+            exit(0);
+
+            free(argv);
+            return 127;
+            
+        }
+//        if( (pid = waitpid( pid, &status, 0)) < 0)
+//            fprintf(stderr, "waitpid error\n");
+
+        command_to_execute = command_to_execute->piped_to;
+
     }
-
-    if( (pid = waitpid( pid, &status, 0)) < 0)
-        fprintf(stderr, "waitpid error\n");
 
     return 0;
 
