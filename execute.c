@@ -41,6 +41,40 @@ char** build_argv(commanditem* command){
 
     return argv;
 }
+
+// opens the file named input if input is non-null
+// redirects the input of the current process from the file
+void redirect_stdin(char* input){
+    if(input){
+        int input_fd = open(input, O_RDONLY);
+        if( input_fd == -1 ){
+            fprintf(stderr, "Couldn't open input file \"%s\" for reading\n", input);
+        }
+
+        if((dup2(input_fd, STDIN_FILENO) == -1) ){
+            fprintf(stderr, "Couldn't assign input file \"%s\" to stdin\n", input);
+        }
+
+        close(input_fd);
+    }
+}
+
+// opens a new file named output if output is non-null
+// redirects the output of the current process to the new file
+void redirect_stdout(char* output){
+    if(output){
+        int output_fd = open(output, O_WRONLY | O_CREAT,  S_IRUSR | S_IWUSR | 
+                                                            S_IRGRP | S_IWGRP | 
+                                                            S_IROTH | S_IWOTH );
+        if( output_fd == -1 )
+            fprintf(stderr, "Couldn't open output file \"%s\" for writing\n", output);
+        if((dup2(output_fd, STDOUT_FILENO) == -1) ){
+            fprintf(stderr, "Couldn't assign output file \"%s\" to stdout\n", output);
+        }
+
+        close(output_fd);
+    }
+}
             
 /***********************
  * int execute(command*)
@@ -60,37 +94,10 @@ int execute(command* command_to_execute){
     }
 
     else if( pid == 0 ) {
-        commanditem* command = command_to_execute->contents;
+        redirect_stdin( command_to_execute->input );
+        redirect_stdout( command_to_execute->output );
 
-        char* input = command_to_execute->input;
-        if(input){
-            int input_fd = open(input, O_RDONLY);
-            if( input_fd == -1 ){
-                fprintf(stderr, "Couldn't open input file \"%s\" for reading", input);
-            }
-
-            if((dup2(input_fd, STDIN_FILENO) == -1) ){
-                fprintf(stderr, "Couldn't assign input file \"%s\" to stdin", input);
-            }
-
-            close(input_fd);
-        }
-
-        char* output = command_to_execute->output;
-        if(output){
-            int output_fd = open(output, O_WRONLY | O_CREAT,  S_IRUSR | S_IWUSR | 
-                                                              S_IRGRP | S_IWGRP | 
-                                                              S_IROTH | S_IWOTH );
-            if( output_fd == -1 )
-                fprintf(stderr, "Couldn't open output file \"%s\" for writing", output);
-            if((dup2(output_fd, STDOUT_FILENO) == -1) ){
-                fprintf(stderr, "Couldn't assign output file \"%s\" to stdout", output);
-            }
-
-            close(output_fd);
-        }
-
-        char** argv = build_argv(command);
+        char** argv = build_argv( command_to_execute->contents );
         execvp(argv[0], argv);
         run_builtin(argv[0], argv);
         exit(0);
