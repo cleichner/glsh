@@ -62,7 +62,7 @@ command* create_parse_tree_recursive(
 
     // Used so we don't have to special-case first node in the tree
     command fake_start_node;
-    fake_start_node.next = NULL;
+    fake_start_node.piped_to = NULL;
     command* current_command = &fake_start_node;
     bool in_command = false;
 
@@ -77,8 +77,8 @@ command* create_parse_tree_recursive(
 
         if (!in_command)
         {
-            current_command->next = create_command();
-            current_command = current_command->next;
+            current_command->piped_to = create_command();
+            current_command = current_command->piped_to;
 
             in_command = true;
         }
@@ -156,7 +156,7 @@ command* create_parse_tree_recursive(
     // Make sure last command has contents.
     current_command->contents = fake_start_item.next;
 
-    return fake_start_node.next;
+    return fake_start_node.piped_to;
 
 }
 
@@ -205,7 +205,7 @@ command* create_command()
     if (new_node == NULL)
         perror("Out of space!");
 
-    new_node->next = NULL;
+    new_node->piped_to = NULL;
     new_node->input = NULL;
     new_node->output = NULL;
     new_node->output_append = false;
@@ -225,7 +225,7 @@ void free_parse_tree(command* parse_tree)
     command* command_iterator = parse_tree;
     while (command_iterator)
     {
-        command* next_command = command_iterator->next;
+        command* next_command = command_iterator->piped_to;
 
         commanditem* commanditem_iterator = command_iterator->contents;
 

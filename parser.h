@@ -22,7 +22,7 @@ typedef struct parsed_command_item_node {
 } commanditem;
 
 typedef struct parsed_command_node {
-    struct parsed_command_node* next;
+    struct parsed_command_node* piped_to;
     struct parsed_command_item_node* contents;
     bool background;
     char* input;
