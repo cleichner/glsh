@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Werror -pedantic -g -Wuninitialized
+CFLAGS = -std=c99 -Wall -Wextra -Werror -pedantic -g -Wuninitialized
 
 PROG = glsh
 HDRS = tokenizer.h parser.h execute.h builtins.h
