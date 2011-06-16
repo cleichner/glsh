@@ -44,20 +44,13 @@ bool is_pipe(struct tokenized_node* token)
 /**************************
  * command* create_parse_tree_recursive(
  *      struct tokenized_node*,
- *      bool,
- *      struct tokenized_node**)
  *
  * Input:
  *  tokenized_command   - Token node to start at
- *  end_on_backticks    - Stop if we hit a backtick (ugly hack)
- *  last_token          - Token that we ended at if we hit a backtick.
  *  
  * Given a tokenized command, create a parse tree out of it.
  */
-command* create_parse_tree_recursive(
-    struct tokenized_node* tokenized_command,
-    bool end_on_backticks,
-    struct tokenized_node** last_token)
+command* create_parse_tree_recursive(struct tokenized_node* tokenized_command)
 {
 
     // Used so we don't have to special-case first node in the tree
@@ -170,8 +163,7 @@ command* create_parse_tree_recursive(
 command* create_parse_tree(
     struct tokenized_node* tokenized_command)
 {
-    struct tokenized_node* junk;
-    return create_parse_tree_recursive(tokenized_command, false, &junk);
+    return create_parse_tree_recursive(tokenized_command);
 }
 
 
