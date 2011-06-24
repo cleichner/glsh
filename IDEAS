@@ -7,3 +7,4 @@ run things across lab machines
 chat with anyone else using glsh on any lab machine
 turnin autocompletion?
 
+use sqlite to store all user data / runtime information
